@@ -68,12 +68,12 @@ wss.on('connection', (ws, req) => {
 
    wss.clients.forEach((client) => {
     if (client !== ws && client.readyState === WebSocket.OPEN) {
-      client.send(`${username} joined the chat ${SECRETCODE}`);
+      client.send(`${username} joined ${SECRETCODE}`);
     }
   });
   
   // Send a special message only to the joining client.
-  ws.send(`you joined the chat! ${SECRETCODE}`);
+  ws.send(`you joined! ${SECRETCODE}`);
 
     if (connectedUsernames.length > 0) {
     ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
@@ -92,7 +92,7 @@ wss.on('connection', (ws, req) => {
       clients.delete(ws);
       const SECRETCODE2 = "XyZ1AbCdEfG2";
       // broadcast(`${username} left the chat`);
-      broadcast(`${username} left the chat ${SECRETCODE2}`);
+      broadcast(`${username} left ${SECRETCODE2}`);
     } else {
       // Otherwise, broadcast the received message.
       const formattedMessage = `${message}`;
@@ -118,7 +118,7 @@ wss.on('connection', (ws, req) => {
 
     const SECRETCODE2 = "XyZ1AbCdEfG2";
     // broadcast(`${username} left the chat`);
-    broadcast(`${username} left the chat ${SECRETCODE2}`);
+    broadcast(`${username} left ${SECRETCODE2}`);
   });
 });
 
