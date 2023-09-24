@@ -180,10 +180,10 @@ rl.on('line', (input) => {
 
 
 
-/*
+
 
 // Start the HTTP server on port 3000 (you can change the port as needed).
 server.listen(3000, () => {
   console.log('WebSocket server is listening on port 3000');
 });
-*/
+
