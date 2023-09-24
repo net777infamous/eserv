@@ -60,7 +60,6 @@ wss.on('connection', (ws, req) => {
     const SECRETCODE3 = "R8mJnXyZ1AbCd"; // A 12-character secret code
 
   // Send a message to the new user with the list of connected usernames.
-
   
   // Send chat message history to the new client.
   sendHistoryToClient(ws);
