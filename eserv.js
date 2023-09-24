@@ -7,7 +7,6 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('WebSocket server is running');
 });
-
 // Create a WebSocket server by passing the HTTP server instance.
 const wss = new WebSocket.Server({ server });
 
