@@ -32,6 +32,7 @@ function sendHistoryToClient(client) {
     client.send(message);
   });
 }
+
 // Event handler for when a client connects to the WebSocket server.
 wss.on('connection', (ws, req) => {
  // console.log('Client connected');
@@ -46,7 +47,9 @@ wss.on('connection', (ws, req) => {
   const connectionTime = new Date();
 
   // Store the client's username and connection time in the clients map.
+  if(username !== 'controlbot587563'){
   clients.set(ws, { username, connectionTime });
+  }
 
   const SECRETCODE = "5vP29KqR8mJn";
 
@@ -71,7 +74,10 @@ wss.on('connection', (ws, req) => {
 
   wss.clients.forEach((client) => {
     if (client !== ws && client.readyState === WebSocket.OPEN) {
+      if(username !== 'controlbot587563'){
+      //  console.log(username)
       client.send(`${username} joined ${SECRETCODE}`);
+      }
     }
   });
   
@@ -105,7 +111,46 @@ wss.on('connection', (ws, req) => {
       const SECRETCODE2 = "XyZ1AbCdEfG2";
       // broadcast(`${username} left the chat`);
       broadcast(`${username} left ${SECRETCODE2}`);
-    } else {
+    } 
+    
+    else if (message.includes('Wjd7Hdk892Jmd')) {
+      const messageWithoutCode = String(message).replace('Wjd7Hdk892Jmd', '');
+     // broadcast("ADMIN: "+messageWithoutCode.toUpperCase() +'R4v9YxK2wMjP')
+      broadcast("admin: "+messageWithoutCode +'R4v9YxK2wMjP')
+            }
+            else if (message.includes('KJjdnIEW83HDn')) {
+              const messageWithoutCode = String(message).replace('KJjdnIEW83HDn', '').trim(); // Trim whitespace
+            
+              wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                  const clientInfo = clients.get(client);
+            
+                  if (clientInfo && clientInfo.username === messageWithoutCode) {
+                    // Disconnect the specified user.
+                    let SECRETCODE2 = "XyZ1AbCdEfG2";
+                    broadcast(`${messageWithoutCode} disconnected ${SECRETCODE2}`);
+
+                    client.terminate(); // Terminate the WebSocket connection.
+            
+                    
+                    // Broadcast a message to the chat indicating that the user has been kicked.
+                    
+                  }
+                }
+              });
+            }
+            
+            else if (message.includes('DjDKj9xkjdJrn')) {
+              const connectedUsernames = Array.from(clients.values())
+              .map(client => client.username)
+              .filter(name => name !== username);
+
+              ws.send(`the chatters: ${connectedUsernames.join(', ')}`);
+            }
+            
+            
+            
+    else {
       // Otherwise, broadcast the received message.
       const formattedMessage = `${message}`;
       broadcast(formattedMessage);
@@ -123,7 +168,10 @@ wss.on('connection', (ws, req) => {
     //console.log('Client disconnected');
 
     // Get the username of the disconnected client.
-    const { username } = clients.get(ws);
+   // const { username } = clients.get(ws);
+   const { username } = clients.get(ws) || {};
+
+   if(username !== undefined){
 
     console.log(username+' disconnected');
 
@@ -133,6 +181,12 @@ wss.on('connection', (ws, req) => {
     const SECRETCODE2 = "XyZ1AbCdEfG2";
     // broadcast(`${username} left the chat`);
     broadcast(`${username} left ${SECRETCODE2}`);
+   }
+   if(username == undefined){
+    console.log('controlbot587563 disconnected');
+
+   }
+
   });
 });
 
