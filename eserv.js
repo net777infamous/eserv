@@ -66,7 +66,14 @@ wss.on('connection', (ws, req) => {
   // Send chat message history to the new client.
   sendHistoryToClient(ws);
   broadcast(`${username} joined the chat ${SECRETCODE}`);
-  ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
+//  ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
+
+    if (connectedUsernames.length > 0) {
+    ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
+  } else {
+    // Send a message indicating that the user is the only one in chat.
+    ws.send(`You're the only one here. Invite others at "http://snap.talk4fun.net/" ${SECRETCODE3}`);
+  }
 
   // Event handler for incoming messages from clients.
   ws.on('message', (message) => {
