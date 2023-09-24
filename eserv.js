@@ -7,6 +7,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('WebSocket server is running');
 });
+
 // Create a WebSocket server by passing the HTTP server instance.
 const wss = new WebSocket.Server({ server });
 
@@ -25,7 +26,6 @@ function broadcast(message) {
   });
 }
 
-
 // Function to send chat message history to a specific client.
 function sendHistoryToClient(client) {
   messageHistory.forEach((message) => {
@@ -35,11 +35,13 @@ function sendHistoryToClient(client) {
 
 // Event handler for when a client connects to the WebSocket server.
 wss.on('connection', (ws, req) => {
-  console.log('Client connected');
+ // console.log('Client connected');
 
   // Parse the query parameters from the request URL.
   const query = url.parse(req.url, true).query;
   const username = query.username || 'Anonymous'; // Use "Anonymous" as the default username.
+
+  console.log(username+' connected');
 
   // Store the client's connection time.
   const connectionTime = new Date();
@@ -60,13 +62,15 @@ wss.on('connection', (ws, req) => {
     const SECRETCODE3 = "R8mJnXyZ1AbCd"; // A 12-character secret code
 
   // Send a message to the new user with the list of connected usernames.
+
   
+
   // Send chat message history to the new client.
   sendHistoryToClient(ws);
-//  broadcast(`${username} joined the chat ${SECRETCODE}`);
-//  ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
+  //broadcast(`${username} joined the chat ${SECRETCODE}`);
+  //ws.send(`You joined the chat ${SECRETCODE}`);
 
-   wss.clients.forEach((client) => {
+  wss.clients.forEach((client) => {
     if (client !== ws && client.readyState === WebSocket.OPEN) {
       client.send(`${username} joined ${SECRETCODE}`);
     }
@@ -74,14 +78,23 @@ wss.on('connection', (ws, req) => {
   
   // Send a special message only to the joining client.
   ws.send(`you joined! ${SECRETCODE}`);
+  
+ // ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
 
-    if (connectedUsernames.length > 0) {
+
+  if (connectedUsernames.length > 0) {
     ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
   } else {
     // Send a message indicating that the user is the only one in chat.
-  //  ws.send(`no one else is here. invite with 'http://snap.talk4fun.net/' ${SECRETCODE3}`);
-      ws.send(`no one else is here ${SECRETCODE3}`);
+    ws.send(`no one else is here ${SECRETCODE3}`);
+
   }
+  
+
+
+
+
+
 
   // Event handler for incoming messages from clients.
   ws.on('message', (message) => {
@@ -108,10 +121,12 @@ wss.on('connection', (ws, req) => {
 
   // Event handler for when a client disconnects.
   ws.on('close', () => {
-    console.log('Client disconnected');
+    //console.log('Client disconnected');
 
     // Get the username of the disconnected client.
     const { username } = clients.get(ws);
+
+    console.log(username+' disconnected');
 
     // Remove the client from the clients map.
     clients.delete(ws);
@@ -121,15 +136,6 @@ wss.on('connection', (ws, req) => {
     broadcast(`${username} left ${SECRETCODE2}`);
   });
 });
-
-
-
-
-
-
-
-
-
 
 const readline = require('readline');
 
@@ -151,7 +157,7 @@ rl.on('line', (input) => {
         if (client.readyState === WebSocket.OPEN) {
           const { username } = clients.get(client);
           if (username === usernameToKick) {
-            let SECRETCODE4 = "R4v9YxK2wMjP";
+            let SECRETCODE2 = "XyZ1AbCdEfG2";
             // Disconnect the specified user.
             broadcast(`${usernameToKick} has been disconnected ${SECRETCODE2}`);
             client.terminate(); // Terminate the WebSocket connection.
@@ -165,7 +171,7 @@ rl.on('line', (input) => {
       // Send the input from the terminal to all connected WebSocket clients.
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          let SECRETCODE4 = "R4v9YxK2wMjP";
+          let SECRETCODE2 = "XyZ1AbCdEfG2";
           client.send(`Admin: ${input} ${SECRETCODE2}`);
         }
       });
@@ -183,8 +189,16 @@ rl.on('line', (input) => {
 
 
 
+
+
+
+
+
 // Start the HTTP server on port 3000 (you can change the port as needed).
 server.listen(3000, () => {
   console.log('WebSocket server is listening on port 3000');
 });
+
+
+
 
