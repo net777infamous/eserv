@@ -62,7 +62,6 @@ wss.on('connection', (ws, req) => {
   // Send a message to the new user with the list of connected usernames.
 
   
-
   // Send chat message history to the new client.
   sendHistoryToClient(ws);
 //  broadcast(`${username} joined the chat ${SECRETCODE}`);
