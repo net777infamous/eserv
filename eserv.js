@@ -26,6 +26,7 @@ function broadcast(message) {
   });
 }
 
+
 // Function to send chat message history to a specific client.
 function sendHistoryToClient(client) {
   messageHistory.forEach((message) => {
