@@ -65,14 +65,23 @@ wss.on('connection', (ws, req) => {
 
   // Send chat message history to the new client.
   sendHistoryToClient(ws);
-  broadcast(`${username} joined the chat ${SECRETCODE}`);
+//  broadcast(`${username} joined the chat ${SECRETCODE}`);
 //  ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
+
+   wss.clients.forEach((client) => {
+    if (client !== ws && client.readyState === WebSocket.OPEN) {
+      client.send(`${username} joined the chat ${SECRETCODE}`);
+    }
+  });
+  
+  // Send a special message only to the joining client.
+  ws.send(`you joined the chat! ${SECRETCODE}`);
 
     if (connectedUsernames.length > 0) {
     ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
   } else {
     // Send a message indicating that the user is the only one in chat.
-    ws.send(`You're the only one here. Invite others at "http://snap.talk4fun.net/" ${SECRETCODE3}`);
+    ws.send(`you're the only one here. invite others at "http://snap.talk4fun.net/" ${SECRETCODE3}`);
   }
 
   // Event handler for incoming messages from clients.
