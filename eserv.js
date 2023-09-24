@@ -81,7 +81,7 @@ wss.on('connection', (ws, req) => {
     ws.send(`the chatters: ${connectedUsernames.join(', ')} ${SECRETCODE3}`);
   } else {
     // Send a message indicating that the user is the only one in chat.
-    ws.send(`you're the only one here. invite others at "http://snap.talk4fun.net/" ${SECRETCODE3}`);
+    ws.send(`you're the only one here. invite others at 'http://snap.talk4fun.net/' ${SECRETCODE3}`);
   }
 
   // Event handler for incoming messages from clients.
