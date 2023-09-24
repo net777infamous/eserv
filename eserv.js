@@ -118,6 +118,17 @@ wss.on('connection', (ws, req) => {
      // broadcast("ADMIN: "+messageWithoutCode.toUpperCase() +'R4v9YxK2wMjP')
       broadcast("admin: "+messageWithoutCode +'R4v9YxK2wMjP')
             }
+
+
+            else if (message.includes('dfjJDJKE73KD')) {
+             //clear history
+
+             messageHistory.length = 0
+             
+                    }
+
+
+
             else if (message.includes('KJjdnIEW83HDn')) {
               const messageWithoutCode = String(message).replace('KJjdnIEW83HDn', '').trim(); // Trim whitespace
             
