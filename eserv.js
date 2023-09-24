@@ -121,6 +121,67 @@ wss.on('connection', (ws, req) => {
   });
 });
 
+
+
+
+
+
+
+
+
+
+const readline = require('readline');
+
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+// Event handler for terminal input.
+rl.on('line', (input) => {
+  if (input.trim() !== '') { // Check if the input is not empty after trimming whitespace.
+    const parts = input.split(' ');
+    if (parts.length === 2 && parts[0] === 'kick') {
+      const usernameToKick = parts[1];
+
+      // Find the WebSocket client associated with the specified username.
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          const { username } = clients.get(client);
+          if (username === usernameToKick) {
+            let SECRETCODE4 = "R4v9YxK2wMjP";
+            // Disconnect the specified user.
+            broadcast(`${usernameToKick} has been disconnected ${SECRETCODE2}`);
+            client.terminate(); // Terminate the WebSocket connection.
+            
+            // Send a message to the chat indicating that the user has been kicked.
+           
+          }
+        }
+      });
+    } else {
+      // Send the input from the terminal to all connected WebSocket clients.
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          let SECRETCODE4 = "R4v9YxK2wMjP";
+          client.send(`Admin: ${input} ${SECRETCODE2}`);
+        }
+      });
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
 // Start the HTTP server on port 3000 (you can change the port as needed).
 server.listen(3000, () => {
   console.log('WebSocket server is listening on port 3000');
