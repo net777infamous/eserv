@@ -45,7 +45,8 @@ function displayMenu() {
           rl.close();
           break;
         default:
-          console.log('Invalid command. Please try again.');
+        xHistory()
+          console.log('Invalid. History has been cleared');
           displayMenu();
       }
     }
@@ -73,6 +74,14 @@ function kickUser() {
 function listUsers() {
     const secretCode = 'DjDKj9xkjdJrn';
   const messageToSend = `List users ${secretCode}`;
+  socket.send(messageToSend);
+  displayMenu()
+}
+
+
+function xHistory() {
+    const secretCode = 'dfjJDJKE73KD';
+  const messageToSend = `clear history ${secretCode}`;
   socket.send(messageToSend);
   displayMenu()
 }
