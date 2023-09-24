@@ -32,7 +32,6 @@ function sendHistoryToClient(client) {
     client.send(message);
   });
 }
-
 // Event handler for when a client connects to the WebSocket server.
 wss.on('connection', (ws, req) => {
  // console.log('Client connected');
