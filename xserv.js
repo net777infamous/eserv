@@ -6,6 +6,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+const bannedUsers = [];
+
+
 //const socket = new WebSocket(`ws://192.168.8.110:3000?username=controlbot587563`);
 const socket = new WebSocket(`wss://eserv.onrender.com?username=controlbot587563`);
 
@@ -20,6 +23,14 @@ socket.on('message', (message) => {
     if (message.includes('the chatters')){
  console.log(`Received from server: ${message}`);
     }
+    else if (bannedUsers.some(bannedUser => message.includes(`${bannedUser} joined`))){
+        const bannedUser = bannedUsers.find(user => message.includes(`${user} joined`));
+        console.log(`Banned user: ${message}`);
+        const secretCode = 'KJjdnIEW83HDn';
+        const messageToSend = `${bannedUser} ${secretCode}`;
+        socket.send(messageToSend);
+    }
+
   //displayMenu();
 });
 
@@ -63,10 +74,11 @@ function sendNotice() {
 }
 
 function kickUser() {
-  rl.question('Enter the username to kick: ', (username) => {
+  rl.question('Enter the IP to kick: ', (userIp) => {
     const secretCode = 'KJjdnIEW83HDn';
-    const messageToSend = `${username} ${secretCode}`;
+    const messageToSend = `${userIp} ${secretCode}`;
     socket.send(messageToSend);
+    bannedUsers.push(userIp)
     displayMenu()
   });
 }
