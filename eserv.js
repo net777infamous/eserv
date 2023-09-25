@@ -17,6 +17,8 @@ const clients = new Map();
 // Initialize an array to store chat message history.
 const messageHistory = [];
 
+const bannedClients = [];
+
 // Function to send a message to all connected clients.
 function broadcast(message) {
   wss.clients.forEach((client) => {
@@ -25,7 +27,6 @@ function broadcast(message) {
     }
   });
 }
-
 
 // Function to send chat message history to a specific client.
 function sendHistoryToClient(client) {
@@ -41,15 +42,39 @@ wss.on('connection', (ws, req) => {
   // Parse the query parameters from the request URL.
   const query = url.parse(req.url, true).query;
   const username = query.username || 'Anonymous'; // Use "Anonymous" as the default username.
+  const clientIp = req.socket.remoteAddress.replace('::ffff:', '');
+  const userIp = `${username}(${clientIp})`; 
+  console.log('('+userIp+')'+' connected');
 
-  console.log(username+' connected');
+
+  if (bannedClients.includes(clientIp)) {
+    console.log(`Banned client ('${username}') attempted to connect: ${clientIp}`);
+    ws.close(); // Close the connection for banned clients
+
+
+    setTimeout(() => {
+      const index = bannedClients.indexOf(clientIp);
+      if (index !== -1) {
+        bannedClients.splice(index, 1); // Remove the IP address
+        console.log(`Removed banned client: ${clientIp}`);
+      }
+    }, 300000);
+
+
+
+    return;
+  }
+
+
+
+
 
   // Store the client's connection time.
   const connectionTime = new Date();
 
   // Store the client's username and connection time in the clients map.
   if(username !== 'controlbot587563'){
-  clients.set(ws, { username, connectionTime });
+  clients.set(ws, { username, connectionTime, userIp, clientIp});
   }
 
   const SECRETCODE = "5vP29KqR8mJn";
@@ -125,36 +150,40 @@ wss.on('connection', (ws, req) => {
              //clear history
 
              messageHistory.length = 0
-             
+
                     }
 
 
 
-            else if (message.includes('KJjdnIEW83HDn')) {
-              const messageWithoutCode = String(message).replace('KJjdnIEW83HDn', '').trim(); // Trim whitespace
-            
-              wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                  const clientInfo = clients.get(client);
-            
-                  if (clientInfo && clientInfo.username === messageWithoutCode) {
-                    // Disconnect the specified user.
-                    let SECRETCODE2 = "XyZ1AbCdEfG2";
-                    broadcast(`${messageWithoutCode} disconnected ${SECRETCODE2}`);
-
-                    client.terminate(); // Terminate the WebSocket connection.
-            
-                    
-                    // Broadcast a message to the chat indicating that the user has been kicked.
-                    
-                  }
+          // Inside your message handling logic
+          else if (message.includes('KJjdnIEW83HDn')) {
+            // Remove 'KJjdnIEW83HDn' from the message
+            const messageWithoutCode = String(message).replace('KJjdnIEW83HDn', '').trim(); // Trim any leading/trailing whitespace
+          
+            // Find and disconnect the client associated with the extracted IP address.
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                const clientInfo = clients.get(client);
+                if (clientInfo && clientInfo.clientIp === messageWithoutCode) { // Check if clientInfo exists
+                  // Disconnect the specified user.
+                  let SECRETCODE2 = "XyZ1AbCdEfG2";
+                  client.send(`disconnected ${SECRETCODE2}`);
+                  client.terminate(); // Terminate the WebSocket connection.
+          bannedClients.push(messageWithoutCode)
+                  // Broadcast a message to the chat indicating that the user has been kicked.
                 }
-              });
-            }
-            
+              }
+            });
+          }
+          
+          
+          
+          
+
+            //  broadcast(`${messageWithoutCode} disconnected ${SECRETCODE2}`);
             else if (message.includes('DjDKj9xkjdJrn')) {
               const connectedUsernames = Array.from(clients.values())
-              .map(client => client.username)
+              .map(client => client.userIp)
               .filter(name => name !== username);
 
               ws.send(`the chatters: ${connectedUsernames.join(', ')}`);
@@ -183,9 +212,15 @@ wss.on('connection', (ws, req) => {
    // const { username } = clients.get(ws);
    const { username } = clients.get(ws) || {};
 
+
+   const query = url.parse(req.url, true).query;
+   const userIp = `${username}(${clientIp})`; 
+
+
    if(username !== undefined){
 
-    console.log(username+' disconnected');
+    console.log('('+userIp+')'+' disconnected');
+    //console.log(username+' disconnected');
 
     // Remove the client from the clients map.
     clients.delete(ws);
