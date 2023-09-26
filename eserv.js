@@ -11,6 +11,7 @@ const server = http.createServer((req, res) => {
 // Create a WebSocket server by passing the HTTP server instance.
 const wss = new WebSocket.Server({ server });
 
+
 // Initialize an array to store connected clients and their last activity times.
 const clients = new Map();
 
@@ -41,7 +42,8 @@ wss.on('connection', (ws, req) => {
 
   // Parse the query parameters from the request URL.
   const query = url.parse(req.url, true).query;
-  const username = query.username || 'Anonymous'; // Use "Anonymous" as the default username.
+ // const username = query.username || 'Anonymous'; // Use "Anonymous" as the default username.
+ const username = (query.username || 'Anonymous').toLowerCase();
   const clientIp = req.socket.remoteAddress.replace('::ffff:', '');
   const userIp = `${username}(${clientIp})`; 
   console.log('('+userIp+')'+' connected');
@@ -73,7 +75,8 @@ wss.on('connection', (ws, req) => {
   const connectionTime = new Date();
 
   // Store the client's username and connection time in the clients map.
-  if(username !== 'controlbot587563'){
+ // if(username !== 'controlbot587563'){
+  if (username !== 'controlbot587563' && username !== 'welcomepage') {
   clients.set(ws, { username, connectionTime, userIp, clientIp});
   }
 
@@ -100,7 +103,8 @@ wss.on('connection', (ws, req) => {
 
   wss.clients.forEach((client) => {
     if (client !== ws && client.readyState === WebSocket.OPEN) {
-      if(username !== 'controlbot587563'){
+     // if(username !== 'controlbot587563'){
+      if (username !== 'controlbot587563' && username !== 'welcomepage') {
       //  console.log(username)
       client.send(`${username} joined ${SECRETCODE}`);
       }
@@ -188,6 +192,24 @@ wss.on('connection', (ws, req) => {
 
               ws.send(`the chatters: ${connectedUsernames.join(', ')}`);
             }
+
+            else if (message.includes('getIJijd38dshAKJ')) {
+              const messageWithoutCode = String(message).replace('getIJijd38dshAKJ', '').trim();
+              const connectedUsernames = Array.from(clients.values())
+    .map(client => client.username)
+    .filter(name => name !== username);
+    console.log(messageWithoutCode +' is attempting to connect')
+    if (connectedUsernames.includes(messageWithoutCode.toLowerCase())) {
+      ws.send('denied');
+      console.log(messageWithoutCode +' is denied connection')
+    }
+    else if (!connectedUsernames.includes(messageWithoutCode.toLowerCase())) {
+      console.log(messageWithoutCode +' is granted connection')
+      ws.send('granted');
+    }
+
+             
+            }
             
             
             
@@ -230,7 +252,7 @@ wss.on('connection', (ws, req) => {
     broadcast(`${username} left ${SECRETCODE2}`);
    }
    if(username == undefined){
-    console.log('controlbot587563 disconnected');
+    console.log('controlbot587563 or welcomepage disconnected');
 
    }
 
