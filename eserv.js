@@ -146,7 +146,7 @@ wss.on('connection', (ws, req) => {
     else if (message.includes('Wjd7Hdk892Jmd')) {
       const messageWithoutCode = String(message).replace('Wjd7Hdk892Jmd', '');
      // broadcast("ADMIN: "+messageWithoutCode.toUpperCase() +'R4v9YxK2wMjP')
-      broadcast("admin: "+messageWithoutCode +'R4v9YxK2wMjP')
+      broadcast("mod: "+messageWithoutCode +'R4v9YxK2wMjP')
             }
 
 
