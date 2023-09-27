@@ -126,8 +126,8 @@ if (storedValue === username) {
     localStorage.removeItem('talkforfunchat');
 
 
-    const socket = new WebSocket(`ws://192.168.8.110:3000?username=${encodeURIComponent(username)}`);
-    //const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURIComponent(username)}`);
+   // const socket = new WebSocket(`ws://192.168.8.110:3000?username=${encodeURIComponent(username)}`);
+const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURIComponent(username)}`);
 
         
         socket.addEventListener('open', () => {
