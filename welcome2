@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DANGERZONE</title>
+  <link rel="icon" type="image/png" href="https://e1.pxfuel.com/desktop-wallpaper/276/574/desktop-wallpaper-danger-skull-danger-logo.jpg">
+  <style>
+    body {
+      background-color: #1e1e1e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #joinContainer {
+      text-align: center;
+    }
+    #joinButton {
+      padding: 15px 30px;
+      font-size: 33px;
+      background-color: black;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    #usernameInput {
+      padding: 10px;
+      font-size: 36px;
+      border: 1px solid #ccc;
+      background-color: black;
+      color: white;
+      border-radius: 5px;
+      margin-right: 10px;
+      width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <div id="joinContainer">
+    <input type="text" id="usernameInput" placeholder="Enter your username">
+    <button id="joinButton">Join Chat</button>
+    <br>
+   <!--<small>Press Enter to Join</small>--> 
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const joinButton = document.getElementById('joinButton');
+      const usernameInput = document.getElementById('usernameInput');
+
+      // Function to handle joining the chat
+      function joinChat() {
+  // Check if the username is not empty
+  const username = usernameInput.value.trim();
+  if (username) {
+    // Establish a WebSocket connection to your server
+    const socket = new WebSocket(`ws://192.168.8.110:3000?username=welcomepage`);
+
+    // Set up event listeners for the WebSocket
+    socket.addEventListener('open', () => {
+      console.log('WebSocket connection established.');
+
+      // Send a request to your server to get a message
+      socket.send('getIJijd38dshAKJ'+usernameInput.value.trim());
+    });
+
+    socket.addEventListener('message', (event) => {
+      // Handle the message received from the server
+      const message = event.data;
+
+      // Redirect based on the message received
+      if (message === 'denied') {
+       // window.location.href = 'page1.html';
+       alert('username taken.');
+      } else if (message === 'granted') {
+        localStorage.removeItem('talkforfunchat');
+        localStorage.setItem('talkforfunchat', username);
+        window.location.href = `chat2.html?username=${encodeURIComponent(username)}`;
+        
+      }
+    });
+
+    socket.addEventListener('close', () => {
+      console.log('WebSocket connection closed.');
+    });
+  } else {
+    alert('Please enter a username.');
+  }
+}
+
+
+      // Bind the joinChat function to the click event of the joinButton
+      joinButton.addEventListener('click', joinChat);
+
+      // Allow pressing Enter key to join the chat
+      usernameInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+          joinChat();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
