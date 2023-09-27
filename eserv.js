@@ -146,7 +146,7 @@ wss.on('connection', (ws, req) => {
     else if (message.includes('Wjd7Hdk892Jmd')) {
       const messageWithoutCode = String(message).replace('Wjd7Hdk892Jmd', '');
      // broadcast("ADMIN: "+messageWithoutCode.toUpperCase() +'R4v9YxK2wMjP')
-      broadcast("mod: "+messageWithoutCode +'R4v9YxK2wMjP')
+      broadcast("admin: "+messageWithoutCode +'R4v9YxK2wMjP')
             }
 
 
@@ -210,6 +210,48 @@ wss.on('connection', (ws, req) => {
 
              
             }
+
+            else if (message.includes('@')) {
+
+              const mentions = String(message).match(/@(\w+)/g); // Extract all mentions
+  
+              if (mentions && mentions.length >= 2) {
+                // Handle the case where there are two or more mentions
+                // For example, you can send a message to the sender about multiple mentions.
+                ws.send(`[forbidden action]`);
+                return
+              }
+
+              // Extract the username mentioned in the message
+              const mentionedUsername = String(message).split('@')[1].split(' ')[0].trim();
+              if (mentionedUsername == username){
+                ws.send('[forbidden action]')
+                return
+              }
+              let userexist = false;
+              // Remove the @username mention from the message
+              const messageWithoutMention = String(message).replace(`@${mentionedUsername}`, '').trim();
+              const messageWithoutUser = messageWithoutMention.replace(`${username}`, '').trim();
+              
+              // Find the WebSocket client associated with the mentioned username
+              wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                  const clientInfo = clients.get(client);
+                  if (clientInfo && clientInfo.username === mentionedUsername) {
+                    // Send the message only to the mentioned user without the mention
+                    client.send(`[PM from ${messageWithoutMention}]`);
+                    ws.send(`[PM sent to @${mentionedUsername} ${messageWithoutUser}]`);
+                    console.log (username + ' sent a PM "'+ messageWithoutUser +'" to '+mentionedUsername)
+                     userexist = true;
+                  }
+                }
+              });
+              if (userexist == false){
+                ws.send('no such user')
+              }
+            }
+            
+            
             
             
             
