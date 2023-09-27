@@ -186,6 +186,9 @@ const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURICompo
 
     if (isSending) {
          clearTimeout(sendMessageTimeout);
+         sendMessageTimeout = setTimeout(() => {
+      isSending = false;
+    }, 5000);
     return
   }
         const message = messageInput.value.trim();
