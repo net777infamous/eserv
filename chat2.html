@@ -101,6 +101,7 @@
 
   <script>
     let isSending = false;
+      let sendMessageTimeout;
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -184,10 +185,9 @@ const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURICompo
       function sendMessage() {
 
     if (isSending) {
+         clearTimeout(sendMessageTimeout);
     return
   }
-
-          
         const message = messageInput.value.trim();
         if (message) {
          //   const urlParams = new URLSearchParams(window.location.search);
@@ -195,7 +195,12 @@ const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURICompo
        const username = window.username
           // Send the message to the server.
           socket.send(`${username}: ${message}`);
+                isSending = true;
           messageInput.value = '';
+
+      sendMessageTimeout = setTimeout(() => {
+      isSending = false;
+    }, 5000);
 
           // Create a new message element.
         //  const messageElement = document.createElement('div');
