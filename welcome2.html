@@ -56,7 +56,10 @@
   const username = usernameInput.value.trim();
   if (username) {
     // Establish a WebSocket connection to your server
-    const socket = new WebSocket(`ws://192.168.8.110:3000?username=welcomepage`);
+   // const socket = new WebSocket(`ws://192.168.8.110:3000?username=welcomepage`);
+    // const socket = new WebSocket(`ws://192.168.8.110:3000?username=welcomepage`);
+        const socket = new WebSocket(`wss://eserv.onrender.com?username=welcomepage`);
+
 
     // Set up event listeners for the WebSocket
     socket.addEventListener('open', () => {
