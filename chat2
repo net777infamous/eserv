@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" type="image/png" href="https://is2-ssl.mzstatic.com/image/thumb/Purple49/v4/3d/1b/69/3d1b6943-42cc-e8d6-0f9e-d2b7dce60152/source/512x512bb.jpg">
+    <title>Talk4fun</title>
+    <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start; /* Start from the top */
+      align-items: center;
+      height: 100%;
+      margin: 0;
+      background-color: black;
+    }
+    #chatContainer {
+      flex: 1; /* Fill remaining vertical space */
+      overflow-y: hidden; /* Hide the scroll bar */
+      border: 0px solid #ccc;
+      padding: 10px;
+      width: 90%;
+      background-color: black;
+      font-size: 36px; /* Increase the font size of chat messages */
+      position: fixed; /* Fixed positioning */
+      bottom: 125px; /* Start at a fixed distance from the bottom (adjust this distance) */
+      margin-top: auto;
+      height: calc(95% - 100px); /* Adjust height to account for the space above */
+      display: flex;
+      flex-direction: column-reverse; /* Reverse the order of messages */
+    }
+
+    .message {  
+      color: pink;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      font-size: 36px;
+
+      font-family: 'Helvetica'
+    }
+    #inputContainer {
+      display: flex;
+      align-items: center;
+      justify-content: center; /* Center items vertically */
+      width: 90%;
+      background-color: black;
+      padding: 10px;
+      margin-left: 40px;
+      position: fixed; /* Fixed position at the bottom */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-top: 1px solid black;
+    }
+    #messageInput {
+      flex: 1;
+      padding: 10px;
+      color: pink;
+      background-color: black;
+      
+      padding-right: 10px;
+      border: 0.1px solid pink;
+      border-radius: 50px;
+      font-size: 36px; /* Font size for mobile */
+    }
+    #sendButton {
+      padding: 10px 20px;
+      font-size: 36px; /* Font size for mobile */
+      font-style: italic;
+      background-color: black;
+      color: pink;
+      margin-left: 15px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .green-text {
+  color: lightgreen !important;
+}
+
+/* CSS for light red leave messages */
+.red-text {
+  color: lightcoral !important;
+}
+.yellow-text {
+  color: yellow !important;
+}
+.blue-text {
+  color: lightblue !important;
+}
+
+  </style>
+</head>
+<body>
+  <div id="chatContainer">
+  </div>
+  <div id="inputContainer">
+    <input type="text" id="messageInput" placeholder="think less, say more">
+    <button id="sendButton">send</button>
+  </div>
+
+  <script>
+    let isSending = false;
+
+
+    if (isSending) {
+    return; 
+  }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+
+        
+      // Function to establish a WebSocket connection.
+      function connectWebSocket() {
+
+        const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username') || 'Anonymous';
+
+    const storedValue = localStorage.getItem('talkforfunchat');
+
+if (storedValue === username) {
+    window.username = username
+    localStorage.removeItem('talkforfunchat');
+
+
+    const socket = new WebSocket(`ws://192.168.8.110:3000?username=${encodeURIComponent(username)}`);
+    //const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURIComponent(username)}`);
+
+        
+        socket.addEventListener('open', () => {
+          console.log('Connected to WebSocket server');
+         // socket.send('getIJijd38dshAKJ'+username);
+        });
+
+        socket.addEventListener('close', () => {
+          console.log('Disconnected from WebSocket server');
+        });
+        
+        
+        return socket;
+
+} else {
+
+    window.location.href = `welcome2.html`;
+
+}
+        // Get the username from the query parameter in the URL
+      
+        
+        // Establish a WebSocket connection with the server and include the username
+       //const socket = new WebSocket(`wss://eserv.onrender.com?username=${encodeURIComponent(username)}`);
+       
+      }
+
+
+
+      // Establish the WebSocket connection when the page loads.
+      const socket = connectWebSocket();
+
+    
+
+
+
+
+
+
+
+      
+    
+
+
+      const chatContainer = document.getElementById('chatContainer');
+      const messageInput = document.getElementById('messageInput');
+      const sendButton = document.getElementById('sendButton');
+      const maxMessages = 30; // Maximum number of messages to keep
+
+      sendButton.addEventListener('click', () => {
+        sendMessage();
+      });
+
+      messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+         //   const urlParams = new URLSearchParams(window.location.search);
+       // const username = urlParams.get('username') || 'Anonymous';
+       const username = window.username
+          // Send the message to the server.
+          socket.send(`${username}: ${message}`);
+          messageInput.value = '';
+
+          // Create a new message element.
+        //  const messageElement = document.createElement('div');
+        //  messageElement.textContent = message;
+         // messageElement.classList.add('message'); // Apply styling to the message
+
+          // Insert the message at the top of the chat container.
+         // chatContainer.prepend(messageElement);
+
+          // Remove excess messages if needed
+          const messages = chatContainer.getElementsByClassName('message');
+          while (messages.length > maxMessages) {
+            chatContainer.removeChild(messages[messages.length - 1]); // Remove the oldest message at the bottom
+          }
+        }
+      }
+
+      // Listen for incoming messages and display them in the chat container.
+      socket.addEventListener('message', async (event) => {
+        if (typeof event.data === 'string') {
+          // Handle text messages directly
+          const message = event.data;
+
+          // Create a new message element.
+          const messageElement = document.createElement('div');
+          messageElement.textContent = message;
+          messageElement.classList.add('message'); // Apply styling to the message
+
+
+          if (message === 'denied') {
+       // window.location.href = 'page1.html';
+       socket.close();
+       alert('username taken!');
+       window.location.href = `welcome2.html`;
+      } else if (message === 'granted') {
+       // window.location.href = `chat2.html?username=${encodeURIComponent(username)}`;
+      }
+
+
+
+
+          if (message.includes('R8mJnXyZ1AbCd')) {
+            messageElement.classList.add('yellow-text');
+            const messageWithoutCode = message.replace('R8mJnXyZ1AbCd', '');
+            messageElement.textContent = messageWithoutCode;
+          //  alert("hhh")
+
+          }
+        if (message.includes('5vP29KqR8mJn')) {
+  messageElement.classList.add('green-text'); // Apply light green text color for join messages
+  const messageWithoutCode = message.replace('5vP29KqR8mJn', '');
+  messageElement.textContent = messageWithoutCode;
+} 
+else if (message.includes('R4v9YxK2wMjP')) {
+  messageElement.classList.add('blue-text'); // Apply light green text color for join messages
+  const messageWithoutCode = message.replace('R4v9YxK2wMjP', '');
+  messageElement.textContent = messageWithoutCode;
+}
+else if (message.includes('XyZ1AbCdEfG2')) {
+  messageElement.classList.add('red-text'); // Apply light red text color for leave messages
+  const messageWithoutCode = message.replace('XyZ1AbCdEfG2', '');
+  messageElement.textContent = messageWithoutCode;
+}
+          // Insert the message at the top of the chat container.
+          chatContainer.prepend(messageElement);
+
+          // Remove excess messages if needed
+          const messages = chatContainer.getElementsByClassName('message');
+          while (messages.length > maxMessages) {
+            chatContainer.removeChild(messages[messages.length - 1]); // Remove the oldest message at the bottom
+          }
+        } else if (event.data instanceof Blob) {
+          // Handle Blob messages by converting them to text
+          const textMessage = await event.data.text();
+
+          // Create a new message element.
+          const messageElement = document.createElement('div');
+          messageElement.textContent = textMessage;
+          messageElement.classList.add('message'); // Apply styling to the message
+
+          // Insert the message at the top of the chat container.
+          chatContainer.prepend(messageElement);
+
+          // Remove excess messages if needed
+          const messages = chatContainer.getElementsByClassName('message');
+          while (messages.length > maxMessages) {
+            chatContainer.removeChild(messages[messages.length - 1]); // Remove the oldest message at the bottom
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
