@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const tf = require('@tensorflow/tfjs');
 
 const nsfwjs = require('nsfwjs');
 const { createCanvas, loadImage } = require('canvas');
