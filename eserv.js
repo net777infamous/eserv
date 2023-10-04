@@ -1,6 +1,56 @@
 const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
+const fs = require('fs');
+
+const nsfwjs = require('nsfwjs');
+const { createCanvas, loadImage } = require('canvas');
+
+
+
+let model;
+nsfwjs.load().then((loadedModel) => {
+  model = loadedModel;
+  console.log('NSFW model loaded');
+});
+
+
+function isValidJSON(message) {
+  try {
+    JSON.parse(message);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function processImage(imageData) {
+  try {
+    // Load the image using the 'canvas' library
+    const image = await loadImage(imageData);
+    const canvas = createCanvas(image.width, image.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0);
+
+    // Classify the image
+    const predictions = await model.classify(canvas);
+
+    // Format the predictions
+    const formattedPredictions = predictions.map((prediction) => {
+      const probabilityDecimal = prediction.probability.toFixed(4);
+      const probabilityPercent = (prediction.probability * 100).toFixed(2);
+      return `${prediction.className}: ${probabilityDecimal} (${probabilityPercent}%)`;
+    });
+
+    return formattedPredictions;
+  } catch (error) {
+    console.error('Error processing image:', error);
+    throw new Error('An error occurred while processing the image.');
+  }
+}
+
+
+
 
 // Create an HTTP server (you can also use Express or another HTTP server framework).
 const server = http.createServer((req, res) => {
@@ -19,6 +69,13 @@ const clients = new Map();
 const messageHistory = [];
 
 const bannedClients = [];
+
+const imageToSend = []
+const whoisthis = [];
+
+
+
+const whoseImage = []
 
 // Function to send a message to all connected clients.
 function broadcast(message) {
@@ -133,7 +190,55 @@ wss.on('connection', (ws, req) => {
 
   // Event handler for incoming messages from clients.
   ws.on('message', (message) => {
+// Imagetosend is actually who to send it to
+
+    //const imageToSend = []
+//const whoseImage = []
+if (message.includes('someonejustsentanimage')&& imageToSend.length == 0) {
+  const messageWithoutCode = String(message).replace('someonejustsentanimage', '');
+  imageToSend.push(messageWithoutCode)
+  whoisthis.push(username)
+  console.log("image about to be sent to "+ messageWithoutCode)
+  ws.send('[image sent to '+messageWithoutCode+']')
+
+}
+
+else if (message.includes('someonejustsentanimage')&& imageToSend.length > 0) {
+
+ws.send ('[something went wrong]')
+// send message to another. keep  create waiting arrays like that. 50 mac. To handle 50 simultenous.  You tried man.
+
+}
+
+
+if (imageToSend.length > 0 && message instanceof Buffer && message.length > 50 && whoisthis[0] == username) {
+  const value = imageToSend[0];
+  console.log("image should be sent to "+ value)
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      const clientInfo = clients.get(client);
+      if (clientInfo && clientInfo.username === value) {
+        client.send('[image recieved from '+username+']')
+        client.send(message);
+        ws.send(message);
+
+  imageToSend.length = 0;
+  whoisthis.length = 0;
+}
+}
+});
+return
+}
+
+
+if (imageToSend.length > 0 && username !== 'controlbot587563' && username !== 'welcomepage'){
+return
+}
+    const marker = 'image:';
+    const secretInfo = 'someonejustsentanimage';
+    if (message.length <= 50) {
     console.log(`Received: ${message}`);
+    }
     if (message === 'disconnect') {
       // If the client sent a "disconnect" message, remove them from the clients map and broadcast a "Disconnected" message.
       const { username } = clients.get(ws);
@@ -142,6 +247,79 @@ wss.on('connection', (ws, req) => {
       // broadcast(`${username} left the chat`);
       broadcast(`${username} left ${SECRETCODE2}`);
     } 
+    else if (isValidJSON(message)) {
+      const jsonData = JSON.parse(message);
+      const binaryData = jsonData.binaryData;
+      
+      // Convert the binaryData object to a Buffer
+      const bufferData = Buffer.from(binaryData);
+      
+      // Create a unique filename (e.g., using a timestamp)
+      const timestamp = Date.now();
+      const filename = `image_${timestamp}.png`; // Use an appropriate file extension
+      
+      // Write the binary data to a file
+      fs.writeFile(filename, bufferData, (err) => {
+        if (err) {
+          console.error('Error writing image file:', err);
+          return;
+        }
+      
+        console.log('Image saved as', filename);
+        // Now you have saved the image on your server.
+      });
+    }
+    
+    
+    
+    
+ 
+    else if (message instanceof Buffer && message.length > 50) {
+      // Handle binary data (image) received from the client
+      console.log('Received binary data with length > 50');
+
+
+      processImage(message)
+      .then((predictions) => {
+        // Find the "Porn" prediction and its probability
+        const pornPrediction = predictions.find(prediction => prediction.includes("Porn:"));
+        if (pornPrediction) {
+          const probabilityRegex = /([0-9.]+)%/;
+          const pornProbability = parseFloat(probabilityRegex.exec(pornPrediction)[1]);
+          if (pornProbability > 30) {
+            // The "Porn" probability is over 30%, don't send the message
+            console.log('Porn probability is over 30%, message not sent');
+            ws.send('[nsfw detected]')
+            setTimeout(() => {
+              ws.close();
+            }, 5000);
+        
+            return;
+          }
+        }
+  
+        // Send the predictions back to the client
+    //    ws.send(JSON.stringify({ predictions }));
+    broadcast(message);
+      messageHistory.push(message)
+      })
+      .catch((error) => {
+        console.error('Error processing image:', error);
+        // Handle the error and potentially send an error response to the client
+      });
+  
+  
+  
+  
+  
+
+      return
+      
+      // Send the binary data back to the original client
+      broadcast(message);
+      messageHistory.push(message)
+    }
+    
     
     else if (message.includes('Wjd7Hdk892Jmd')) {
       const messageWithoutCode = String(message).replace('Wjd7Hdk892Jmd', '');
@@ -181,8 +359,7 @@ wss.on('connection', (ws, req) => {
           }
           
           
-          
-          
+
 
             //  broadcast(`${messageWithoutCode} disconnected ${SECRETCODE2}`);
             else if (message.includes('DjDKj9xkjdJrn')) {
@@ -239,8 +416,14 @@ wss.on('connection', (ws, req) => {
                   const clientInfo = clients.get(client);
                   if (clientInfo && clientInfo.username === mentionedUsername) {
                     // Send the message only to the mentioned user without the mention
+                    if (messageWithoutUser.length>1){
                     client.send(`[PM from ${messageWithoutMention}]`);
                     ws.send(`[PM sent to @${mentionedUsername} ${messageWithoutUser}]`);
+                  }
+                  else{
+                    ws.send(`[can't send empty message]`);
+                    //ws.send(`[PM sent to @${mentionedUsername} ${messageWithoutUser}]`);
+                  }
                     console.log (username + ' sent a PM "'+ messageWithoutUser +'" to '+mentionedUsername)
                      userexist = true;
                   }
@@ -360,7 +543,8 @@ rl.on('line', (input) => {
 
 // Start the HTTP server on port 3000 (you can change the port as needed).
 server.listen(3000, () => {
-  console.log('WebSocket server is listening on port 3000');
+ // console.log('WebSocket server is listening on port 3000');
+ console.log('server in listen mode');
 });
 
 
